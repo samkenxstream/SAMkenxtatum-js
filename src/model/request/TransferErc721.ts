@@ -1,6 +1,6 @@
-import { IsIn, IsNotEmpty, IsNumberString, ValidateIf, IsOptional, Length, MaxLength, Min } from 'class-validator'
-import { Currency } from './Currency'
-import { PrivateKeyOrSignatureId } from './PrivateKeyOrSignatureId'
+import {IsIn, IsNotEmpty, IsNumberString, IsOptional, Length, MaxLength, Min, ValidateIf} from 'class-validator';
+import {Currency} from './Currency';
+import {PrivateKeyOrSignatureId} from './PrivateKeyOrSignatureId';
 
 export class TransferErc721 extends PrivateKeyOrSignatureId {
 
@@ -8,16 +8,17 @@ export class TransferErc721 extends PrivateKeyOrSignatureId {
     @Length(42, 58)
     public to: string;
 
+    @ValidateIf(o => o.chain !== Currency.SOL)
     @IsNotEmpty()
     @MaxLength(256)
-    public tokenId: string;
+    public tokenId?: string;
 
     @IsNotEmpty()
-    @Length(1, 43)
+    @Length(1, 44)
     public contractAddress: string;
 
     @IsNotEmpty()
-    @IsIn([Currency.BSC, Currency.ETH, Currency.CELO, Currency.XDC, Currency.TRON, Currency.ONE, Currency.MATIC, Currency.ALGO])
+    @IsIn([Currency.BSC, Currency.ETH, Currency.CELO, Currency.XDC, Currency.TRON, Currency.ONE, Currency.MATIC, Currency.ALGO, Currency.SOL])
     public chain: Currency;
 
     @Min(0)
@@ -41,7 +42,7 @@ export class TransferErc721 extends PrivateKeyOrSignatureId {
     @ValidateIf(o => o.provenanceData && o.tokenPrice && o.provenance)
     public tokenPrice?: string;
 
-    @ValidateIf(o => o.chain === Currency.ALGO && o.signatureId)
+    @ValidateIf(o => (o.chain === Currency.ALGO && o.signatureId) || o.chain === Currency.SOL)
     @IsNotEmpty()
     @Length(42, 58)
     public from?: string;

@@ -926,7 +926,7 @@ export const prepareTronTransferTrc721SignedTransaction = async (testnet: boolea
         [{type: 'address', value: tronWeb.address.toHex(to)},
             {
                 type: 'uint256',
-                value: `0x${new BigNumber(tokenId).toString(16)}`
+                value: `0x${new BigNumber(tokenId as string).toString(16)}`
             }],
         sender,
     )

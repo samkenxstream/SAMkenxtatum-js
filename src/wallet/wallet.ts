@@ -1,5 +1,6 @@
 import {generatePrivateKey, getAddressFromPrivateKey} from '@binance-chain/javascript-sdk/lib/crypto';
 import Neon, {wallet} from '@cityofzion/neon-js';
+import * as solana from '@solana/web3.js';
 import {generateMnemonic, mnemonicToSeed} from 'bip39';
 import {bip32, networks} from 'bitcoinjs-lib';
 import {hdkey as ethHdKey} from 'ethereumjs-wallet';
@@ -318,13 +319,26 @@ export const generateAdaWallet = async (mnemonic: string): Promise<Wallet> => {
  */
 export const generateAlgoWallet = async (mnem?: string) => {
     const account = mnem ? algosdk.mnemonicToSecretKey(mnem) : algosdk.generateAccount();
-    const encoder = new base32.Encoder({type: "rfc4648"});
+    const encoder = new base32.Encoder({type: 'rfc4648'});
     const secret = encoder.write(account.sk).finalize();
     return {
         address: account.addr,
         secret: secret,
-    }
+    };
 }
+
+/**
+ * Generate Solana wallet
+ * @param privateKey key to generate address from
+ * @returns address and secret
+ */
+export const generateSolanaWallet = async (privateKey?: string) => {
+    const pair = privateKey ? solana.Keypair.fromSecretKey(Buffer.from(privateKey, 'hex')) : solana.Keypair.generate();
+    return {
+        address: pair.publicKey.toBase58(),
+        privateKey: Buffer.from(pair.secretKey).toString('hex'),
+    };
+};
 
 /**
  * Generate wallet
@@ -334,7 +348,7 @@ export const generateAlgoWallet = async (mnem?: string) => {
  * @returns wallet or a combination of address and private key
  */
 export const generateWallet = (currency: Currency, testnet: boolean, mnemonic?: string) => {
-    const mnem = mnemonic ? mnemonic : generateMnemonic(256)
+    const mnem = mnemonic ? mnemonic : generateMnemonic(256);
     switch (currency) {
         case Currency.BTC:
             return generateBtcWallet(testnet, mnem)
@@ -413,16 +427,18 @@ export const generateWallet = (currency: Currency, testnet: boolean, mnemonic?: 
         case Currency.VET:
             return generateVetWallet(testnet, mnem)
         case Currency.NEO:
-            return generateNeoWallet()
+            return generateNeoWallet();
         case Currency.BNB:
-            return generateBnbWallet(testnet)
+            return generateBnbWallet(testnet);
         case Currency.LYRA:
-            return generateLyraWallet(testnet, mnem)
+            return generateLyraWallet(testnet, mnem);
         case Currency.ADA:
-            return generateAdaWallet(mnem)
+            return generateAdaWallet(mnem);
         case Currency.ALGO:
-            return generateAlgoWallet(mnemonic)
+            return generateAlgoWallet(mnemonic);
+        case Currency.SOL:
+            return generateSolanaWallet(mnemonic);
         default:
-            throw new Error('Unsupported blockchain.')
+            throw new Error('Unsupported blockchain.');
     }
 }
