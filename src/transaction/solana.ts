@@ -1,11 +1,19 @@
 import {ASSOCIATED_TOKEN_PROGRAM_ID, MintLayout, Token, TOKEN_PROGRAM_ID} from '@solana/spl-token';
-import {Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction} from '@solana/web3.js';
+import {
+    Connection,
+    Keypair,
+    LAMPORTS_PER_SOL,
+    PublicKey,
+    sendAndConfirmTransaction,
+    SystemProgram,
+    Transaction
+} from '@solana/web3.js';
 import {BigNumber} from 'bignumber.js';
 import BN from 'bn.js';
 import {serialize} from 'borsh';
 import {validateBody} from '../connector/tatum';
 import {TATUM_API_URL} from '../constants';
-import {SolanaMintNft, TransferErc721, TransferSolana} from '../model';
+import {SolanaMintNft, TransferErc721, TransferSolana, TransferSolanaSlp} from '../model';
 import {
     createAssociatedTokenAccountInstruction,
     createMasterEditionInstruction,
@@ -44,6 +52,50 @@ export const sendSolana = async (testnet: boolean, body: TransferSolana, provide
     }
 
     return await sendAndConfirmTransaction(getSolanaClient(testnet, provider), transaction, [generateSolanaKeyPair(body.fromPrivateKey as string)]);
+};
+
+export const transferSolanaSlpToken = async (testnet: boolean, body: TransferSolanaSlp, provider?: string) => {
+    await validateBody(body, TransferSolanaSlp);
+    const connection = getSolanaClient(testnet, provider);
+    const from = new PublicKey(body.from as string);
+    const transaction = new Transaction({feePayer: from});
+
+    const mint = new PublicKey(body.contractAddress);
+    const toTokenAccountAddress = (
+        await PublicKey.findProgramAddress(
+            [new PublicKey(body.to).toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+            SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
+        )
+    )[0];
+    transaction.add(
+        createAssociatedTokenAccountInstruction(
+            toTokenAccountAddress,
+            from,
+            new PublicKey(body.to),
+            mint,
+        ),
+    );
+
+    const fromTokenAddress = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mint, from);
+    transaction.add(
+        Token.createTransferInstruction(
+            TOKEN_PROGRAM_ID,
+            fromTokenAddress,
+            toTokenAccountAddress,
+            from,
+            [],
+            1
+        )
+    );
+
+    if (body.signatureId) {
+        return {txData: transaction.serialize().toString('hex')};
+    }
+
+    const wallet = generateSolanaKeyPair(body.fromPrivateKey as string);
+    return {
+        txId: await sendAndConfirmTransaction(connection, transaction, [wallet]),
+    };
 };
 
 export const transferSolanaNft = async (testnet: boolean, body: TransferErc721, provider?: string) => {

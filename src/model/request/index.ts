@@ -1,4 +1,5 @@
 export * from './CreateRecord';
+export * from './TransferSolanaSlp';
 export * from './Currency';
 export * from './EstimateGasVet';
 export * from './Fee';
