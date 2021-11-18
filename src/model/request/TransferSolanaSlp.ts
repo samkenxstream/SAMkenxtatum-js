@@ -1,4 +1,4 @@
-import {IsIn, IsNotEmpty, IsNumberString, Length, Matches} from 'class-validator';
+import {IsIn, IsNotEmpty, IsNumberString, Length, Matches, Max, Min} from 'class-validator';
 import {Currency} from './Currency';
 import {PrivateKeyOrSignatureId} from './PrivateKeyOrSignatureId';
 
@@ -20,6 +20,11 @@ export class TransferSolanaSlp extends PrivateKeyOrSignatureId {
     @IsNotEmpty()
     @Length(44, 44)
     public contractAddress: string;
+
+    @IsNotEmpty()
+    @Min(0)
+    @Max(100)
+    public decimals: number;
 
     @IsNotEmpty()
     @Length(44, 44)

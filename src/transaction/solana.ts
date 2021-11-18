@@ -84,7 +84,7 @@ export const transferSolanaSlpToken = async (testnet: boolean, body: TransferSol
             toTokenAccountAddress,
             from,
             [],
-            1
+            new BigNumber(body.amount).multipliedBy(body.decimals).toNumber()
         )
     );
 
