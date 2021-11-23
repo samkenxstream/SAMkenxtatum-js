@@ -61,20 +61,35 @@ export const transferSolanaSlpToken = async (testnet: boolean, body: TransferSol
     const transaction = new Transaction({feePayer: from});
 
     const mint = new PublicKey(body.contractAddress);
+
     const toTokenAccountAddress = (
         await PublicKey.findProgramAddress(
             [new PublicKey(body.to).toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
             SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
         )
     )[0];
-    transaction.add(
-        createAssociatedTokenAccountInstruction(
-            toTokenAccountAddress,
-            from,
-            new PublicKey(body.to),
-            mint,
-        ),
-    );
+    try {
+        const data = await connection.getAccountInfo(new PublicKey(body.to));
+        if (!data) {
+            transaction.add(
+                createAssociatedTokenAccountInstruction(
+                    toTokenAccountAddress,
+                    from,
+                    new PublicKey(body.to),
+                    mint,
+                ),
+            );
+        }
+    } catch (e) {
+        transaction.add(
+            createAssociatedTokenAccountInstruction(
+                toTokenAccountAddress,
+                from,
+                new PublicKey(body.to),
+                mint,
+            ),
+        );
+    }
 
     const fromTokenAddress = await Token.getAssociatedTokenAddress(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, mint, from);
     transaction.add(
@@ -84,7 +99,7 @@ export const transferSolanaSlpToken = async (testnet: boolean, body: TransferSol
             toTokenAccountAddress,
             from,
             [],
-            new BigNumber(body.amount).multipliedBy(body.decimals).toNumber()
+            new BigNumber(body.amount).multipliedBy(10 ^ body.decimals).toNumber()
         )
     );
 
