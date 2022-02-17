@@ -1,7 +1,8 @@
 import { BlockchainTestData } from '../shared-testing'
 
-export const TRON_TEST_DATA: Pick<BlockchainTestData, 'BLOCK_HASH' | 'BLOCK_HEIGHT' | 'TESTNET' | 'TX_HASH'> =
+export const TRON_TEST_DATA: Pick<BlockchainTestData, 'BLOCK_HASH' | 'BLOCK_HEIGHT' | 'TESTNET' | 'TX_HASH' | 'PROVIDER'> =
   {
+    PROVIDER: 'https://api.shasta.trongrid.i',
     TESTNET: {
       XPUB: 'tpubDEKXb45q3i1tKQdUsCmG1BfNTHbztHT73q8hCBz6PN93zCKUppXiUsqEW38jvSQzgvYjMzPSGYjH7TPKkjZc5wTHTPSJs2NBJpd4mbos5ZZ',
       XPUB_REGEX: /tpub/,
