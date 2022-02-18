@@ -229,4 +229,6 @@ export interface SdkWithMarketplaceFunctions {
 }
 
 export type BroadcastFunction = (requestBody: BroadcastKMS) => CancelablePromise<TransactionHashKMS>
-export type OffchainBroadcastFunction = (requestBody: BroadcastWithdrawal) => CancelablePromise<BroadcastResponse>
+export type OffchainBroadcastFunction = (
+  requestBody: BroadcastWithdrawal,
+) => CancelablePromise<BroadcastResponse>
