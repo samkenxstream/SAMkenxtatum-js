@@ -9,7 +9,9 @@ import {
   DeployNft as ApiDeployNft,
   DeployNftKMS as ApiDeployNftKMS,
   TransferAlgo as ApiTransferAlgo,
+  TransferAlgorandBlockchain as ApiTransferAlgorand,
   TransferAlgoKMS as ApiTransferAlgoKMS,
+  TransferAlgorandBlockchainKMS as ApiTransferAlgorandKMS,
   TransferErc721,
   TransferNft as ApiTransferNft,
   TransferNftKMS as ApiTransferNftKMS,
@@ -22,17 +24,12 @@ import base32 from 'base32.js'
 import { algoWallet } from './algo.wallet'
 import { isWithSignatureId, WithoutChain } from '@tatumio/shared-abstract-sdk'
 
-function isTransferAlgoKMS(input: TransferAlgo | TransferAlgoKMS): input is TransferAlgoKMS {
-  return (input as TransferAlgoKMS).signatureId !== undefined
+function isTransferAlgoKMS(input: ApiTransferAlgorand | ApiTransferAlgorandKMS): input is ApiTransferAlgorandKMS {
+  return (input as ApiTransferAlgorandKMS).signatureId !== undefined
 }
 
-// TODO: Probably missing in OpenAPI spec
-export type TransferAlgo = Omit<ApiTransferAlgo, 'senderAccountId'> & Pick<TransferErc721, 'fee'>
-export type TransferAlgoKMS = Omit<ApiTransferAlgoKMS, 'senderAccountId'> &
-  Pick<TransferErc721, 'fee'> & { from: string }
-
 const prepareSignedTransaction = async (
-  body: TransferAlgo | TransferAlgoKMS,
+  body: ApiTransferAlgorand | ApiTransferAlgorandKMS,
   testnet = false,
   algoWeb: AlgoWeb,
   provider?: string,
@@ -42,10 +39,10 @@ const prepareSignedTransaction = async (
 
   const decoder = new base32.Decoder({ type: 'rfc4648' })
   const enc = new TextEncoder()
-  const note = enc.encode(body.senderNote ?? '')
+  const note = enc.encode(body.note ?? '')
   const bodyn = algosdk.makePaymentTxnWithSuggestedParams(
-    body.account,
-    body.address,
+    body.from,
+    body.to,
     Number(body.amount) * 1000000,
     undefined,
     note,
@@ -60,7 +57,7 @@ const prepareSignedTransaction = async (
     return JSON.stringify(bodyn)
   }
 
-  const secretKey = new Uint8Array(decoder.write(body.privateKey).buf)
+  const secretKey = new Uint8Array(decoder.write(body.fromPrivateKey).buf)
   const signedTxn = bodyn.signTxn(secretKey)
 
   return Buffer.from(signedTxn).toString('hex')
@@ -493,7 +490,7 @@ export const algoTx = (args: { algoWeb: AlgoWeb }) => {
          * @param provider url of the algorand server endpoint for purestake.io restapi
          * @returns transaction data to be broadcast to blockchain
          */
-        signedTransaction: async (body: TransferAlgo | TransferAlgoKMS, testnet = false, provider?: string) =>
+        signedTransaction: async (body: ApiTransferAlgorand | ApiTransferAlgorandKMS, testnet = false, provider?: string) =>
           prepareSignedTransaction(body, testnet, args.algoWeb, provider),
       },
       send: {
@@ -505,7 +502,7 @@ export const algoTx = (args: { algoWeb: AlgoWeb }) => {
          * @param provider url of the Algorand Server to connect to. If not set, default public server will be used.
          * @returns transaction id of the transaction in the blockchain
          */
-        signedTransaction: async (body: TransferAlgo | TransferAlgoKMS, testnet = false, provider?: string) =>
+        signedTransaction: async (body: ApiTransferAlgorand | ApiTransferAlgorandKMS, testnet = false, provider?: string) =>
           BlockchainAlgorandAlgoService.algoandBroadcast({
             txData: await prepareSignedTransaction(body, testnet, args.algoWeb, provider),
             ...(isTransferAlgoKMS(body) && { signatureId: body.signatureId }),

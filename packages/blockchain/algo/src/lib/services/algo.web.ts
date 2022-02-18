@@ -25,7 +25,7 @@ export const algoWeb = (): AlgoWeb => {
         ? process.env['TATUM_ALGORAND_TESTNET_TOKEN']
         : process.env['TATUM_ALGORAND_MAINNET_TOKEN']
 
-      if (!tokenValue) {
+      if (!tokenValue && !provider) {
         throw new Error('No ALGORAND token specified')
       }
 
@@ -49,7 +49,7 @@ export const algoWeb = (): AlgoWeb => {
         ? process.env['TATUM_ALGORAND_TESTNET_TOKEN']
         : process.env['TATUM_ALGORAND_MAINNET_TOKEN']
 
-      if (!tokenValue) {
+      if (!tokenValue && !provider) {
         throw new Error('No ALGORAND token specified')
       }
 
