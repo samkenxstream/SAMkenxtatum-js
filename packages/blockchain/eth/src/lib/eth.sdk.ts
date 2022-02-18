@@ -1,6 +1,6 @@
 import { evmBasedMarketplace, evmBasedSdk } from '@tatumio/shared-blockchain-evm-based'
 import { Blockchain, Web3Request, Web3Response } from '@tatumio/shared-core'
-import { BlockchainEthereumService } from '@tatumio/api-client'
+import { BlockchainEthereumService, OffChainWithdrawalService } from '@tatumio/api-client'
 import { ethWeb3 } from './services/eth.web3'
 import { ethKmsService } from './services/eth.kms'
 import { ethTx } from './services/eth.tx'

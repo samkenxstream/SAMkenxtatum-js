@@ -41,6 +41,8 @@ import {
   XlmWallet,
   XrpWallet,
   AddNftMinter,
+  BroadcastWithdrawal,
+  BroadcastResponse,
 } from '@tatumio/api-client'
 import { Blockchain, blockchainHelper } from '@tatumio/shared-core'
 import { abstractSdk } from '@tatumio/shared-abstract-sdk'
@@ -227,3 +229,4 @@ export interface SdkWithMarketplaceFunctions {
 }
 
 export type BroadcastFunction = (requestBody: BroadcastKMS) => CancelablePromise<TransactionHashKMS>
+export type OffchainBroadcastFunction = (requestBody: BroadcastWithdrawal) => CancelablePromise<BroadcastResponse>
